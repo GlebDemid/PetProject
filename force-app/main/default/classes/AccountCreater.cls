@@ -1,10 +1,13 @@
 public without sharing class AccountCreater {
     //create a number of Accounts and randomly connected them with all countries 
-    public void aAccounts(Integer a) {
+    public void aAccounts(Integer numbOfAcc) {
         List<Account> accs = new List<Account>();
         List<Country__c> allcountrys = [SELECT id, Name, ISO_Country_Code__c FROM Country__c];
         Integer numbOfCountrys = allcountrys.size();
-        List<Integer> numbAccInCountries = nRandNumbInRange(numbOfCountrys, a);
+        if (numbOfCountrys > numbOfAcc) {
+            throw new IllegalArgumentException('Number of Accounts can\'t be lower than number of countries');
+        }
+        List<Integer> numbAccInCountries = nRandNumbInRange(numbOfCountrys, numbOfAcc);
         for (Integer i=0; i<numbOfCountrys; i++) {
             Country__c oneCountry = allcountrys[i];
             for (Integer j=0; j<numbAccInCountries[i]; j++) {
@@ -16,20 +19,14 @@ public without sharing class AccountCreater {
             }
         }
         insert accs;
-
-        
     }
-    //create n random unique numbers with k summ
+    //create n random numbers with k summ
     static public List<Integer> nRandNumbInRange(Integer n, Integer k) {
         List<Integer> randNumbers = new List<Integer>();
         randNumbers.add(0);
         randNumbers.add(k);
         for (Integer i=1; i<n ; i++) {
             Integer randNumber = Integer.valueOf(Math.random()*k);
-            if (randNumbers.contains(randNumber)) {
-                i--;
-                continue;
-            }
             randNumbers.add(randNumber);
         }
         randNumbers.sort();
