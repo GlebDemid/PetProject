@@ -9,17 +9,36 @@ public class Accounts extends fflib_SObjectDomain {
     }
 
     public override void onBeforeUpdate(map<id, SObject> existing) {
+        changingAccCountryBasedOnISO();        
+    }
+
+    public override void onBeforeInsert() {
+        changingAccCountryBasedOnISO();
+    }
+
+    private void changingAccCountryBasedOnISO() {
         List<String> isoCodes = new List<String>();
         List<Account> changedAccs = new List<Account>();
         List<Account> accsWithCountry = new List<Account>();
-        for(Account newAcc: (List<Account>) records){
-            Account oldAcc = (Account)Trigger.oldMap.get(newAcc.Id);
-            if (oldAcc.BillingCountry != newAcc.BillingCountry) {
+        if (Trigger.isUpdate) {
+            for(Account newAcc: (List<Account>) records){
+                Account oldAcc = (Account)Trigger.oldMap.get(newAcc.Id);
+                if (oldAcc.BillingCountry != newAcc.BillingCountry) {
+                    String isoCode = newAcc.BillingCountry;
+                    changedAccs.add(newAcc);
+                    isoCodes.add(isoCode);
+                } 
+            }
+        }   
+
+        if (Trigger.isInsert) {
+            for(Account newAcc: (List<Account>) records){
                 String isoCode = newAcc.BillingCountry;
                 changedAccs.add(newAcc);
                 isoCodes.add(isoCode);
-            } 
+            }    
         }
+        
 
         List<Country__c> countrys = [SELECT id, ISO_Country_Code__c FROM Country__C WHERE ISO_Country_Code__c IN :isoCodes];
         
@@ -37,7 +56,6 @@ public class Accounts extends fflib_SObjectDomain {
                 acc.Country__c = null;
             }
         }
-        
     }
     
 }

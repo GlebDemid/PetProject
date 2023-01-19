@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>MD_to_Region__c</fullName>
+    <externalId>false</externalId>
+    <label>MD to Region</label>
+    <referenceTo>Region__c</referenceTo>
+    <relationshipLabel>Sales Team Assignments</relationshipLabel>
+    <relationshipName>Sales_Team_Assignments</relationshipName>
+    <relationshipOrder>1</relationshipOrder>
+    <reparentableMasterDetail>false</reparentableMasterDetail>
+    <trackTrending>false</trackTrending>
+    <type>MasterDetail</type>
+    <writeRequiresMasterRead>false</writeRequiresMasterRead>
+</CustomField>
