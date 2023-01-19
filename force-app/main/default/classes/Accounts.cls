@@ -55,14 +55,9 @@ public class Accounts extends fflib_SObjectDomain {
             if (ISOAndItCountry.containsKey(acc.BillingCountry)) {
                 acc.Country__c = ISOAndItCountry.get(acc.BillingCountry).Id;
                 accsWithCountry.add(acc);
-            }
-        }
-
-        for (Account acc: changedAccs) {
-            if (!accsWithCountry.contains(acc)) {
+            } else {
                 acc.Country__c = null;
             }
         }
     }
-    
 }
