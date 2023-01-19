@@ -19,7 +19,7 @@ public class Accounts extends fflib_SObjectDomain {
     private void changingAccCountryBasedOnISO() {
         List<String> isoCodes = new List<String>();
         List<Account> changedAccs = new List<Account>();
-        List<Account> accsWithCountry = new List<Account>();
+
         if (Trigger.isUpdate) {
             for(Account newAcc: (List<Account>) records){
                 Account oldAcc = (Account)Trigger.oldMap.get(newAcc.Id);
@@ -34,20 +34,27 @@ public class Accounts extends fflib_SObjectDomain {
         if (Trigger.isInsert) {
             for(Account newAcc: (List<Account>) records){
                 String isoCode = newAcc.BillingCountry;
-                changedAccs.add(newAcc);
                 isoCodes.add(isoCode);
-            }    
+            }
+            changedAccs = (List<Account>) records;
         }
         
 
-        List<Country__c> countrys = [SELECT id, ISO_Country_Code__c FROM Country__C WHERE ISO_Country_Code__c IN :isoCodes];
+        List<Country__c> countrys = [SELECT id, ISO_Country_Code__c 
+                FROM Country__C 
+                WHERE ISO_Country_Code__c IN :isoCodes];
         
+        Map<String, Country__c> ISOAndItCountry = new Map<String,Country__c>();
+        for (Country__c country : countrys) {
+            ISOAndItCountry.put(country.ISO_Country_Code__c, country);
+        }
+
+        
+        List<Account> accsWithCountry = new List<Account>();
         for (Account acc: changedAccs) {
-            for (Country__c country : countrys) {
-                if (acc.BillingCountry == country.ISO_Country_Code__c) {
-                    acc.Country__c = country.Id;
-                    accsWithCountry.add(acc);
-                }
+            if (ISOAndItCountry.containsKey(acc.BillingCountry)) {
+                acc.Country__c = ISOAndItCountry.get(acc.BillingCountry).Id;
+                accsWithCountry.add(acc);
             }
         }
 

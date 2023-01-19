@@ -100,12 +100,12 @@ private class ChangeAccOwnerTest {
     @isTest
     static void changeAccountOwnerTest() {
         List<Account> acc = new List<Account>();
-        System.Test.startTest();
         acc = [SELECT id, Owner__c 
                 FROM Account 
                 WHERE Owner__c=null];
         //checking that accounts without owner have been inserted
         System.assertEquals(97, acc.size());
+        System.Test.startTest();
         ChangeAccOwner classInstant = new ChangeAccOwner();
         Id batchId = Database.executeBatch(classInstant);        
         System.Test.stopTest();
