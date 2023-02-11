@@ -2,7 +2,7 @@
 private class ChangeAccountOwnerBatchTest {
     
     @TestSetup
-    static void makeData(){
+    private static void makeData(){
         fflib_SObjectUnitOfWork uow = new fflib_SObjectUnitOfWork(
             new Schema.SObjectType[] {
                 Sales_Team__c.SObjectType,
@@ -114,12 +114,12 @@ private class ChangeAccountOwnerBatchTest {
     }
     
     @isTest
-    static private void changeAccountOwnerTest() {
+    private static void changeAccountOwnerTest() {
         List<Account> acc = new List<Account>();
-        acc = [SELECT id, Owner__c
+        acc = [
+                SELECT id, Owner__c
                 FROM Account 
-                WHERE Owner__c=null
-                ];
+                WHERE Owner__c=null];
         Account_allocation__c allocation = [
                 SELECT Name, last_assignment_lead__c 
                 FROM Account_allocation__c 
@@ -134,18 +134,21 @@ private class ChangeAccountOwnerBatchTest {
         Id batchId = Database.executeBatch(classInstant);        
         System.Test.stopTest();
         
-        acc = [SELECT id, Owner__c 
+        acc = [
+                SELECT id, Owner__c 
                 FROM Account 
                 WHERE Owner__c=null];
         
         System.Assert.AreEqual(0, acc.size(),
                 'checking of the absence of accounts without an owner');
 
-        Sales_Team_Assignment__c onlyOneSTA = [SELECT MD_to_Region__r.Name, MD_to_Sales_Team__r.Lead__c 
+        Sales_Team_Assignment__c onlyOneSTA = [
+                SELECT MD_to_Region__r.Name, MD_to_Sales_Team__r.Lead__c 
                 FROM Sales_Team_Assignment__c 
                 WHERE MD_to_Region__r.Name = 'Region 4'];
         Region__c regionWithOneSTA = onlyOneSTA.MD_to_Region__r;
-        Account accWithOneSTA = [SELECT Owner__c, Country__r.Region__c 
+        Account accWithOneSTA = [
+                SELECT Owner__c, Country__r.Region__c 
                 FROM Account 
                 WHERE Country__r.Region__c = :regionWithOneSTA.Id
                 LIMIT 1];
@@ -153,7 +156,8 @@ private class ChangeAccountOwnerBatchTest {
         System.Assert.AreEqual(onlyOneSTA.MD_to_Sales_Team__r.Lead__c, accWithOneSTA.Owner__c,
                 'checking that account with one Sales Team Assignment has the correct owner');
         
-        List<Account> accWithPreOwner = [SELECT Owner__c 
+        List<Account> accWithPreOwner = [
+                SELECT Owner__c 
                 FROM Account 
                 WHERE Owner__r.Name = 'Jon 90' 
                 AND Owner__r.Last_Name__c ='Adams 1'];

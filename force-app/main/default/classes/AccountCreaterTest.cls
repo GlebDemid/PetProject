@@ -1,7 +1,7 @@
 @isTest
 private class AccountCreaterTest {
     @TestSetup
-    static void makeData(){
+    static private void makeData(){
         List<Country__c> countrys = new List<Country__c>();
         List<String> countryNames = new List<String>{'Brasilia', 'Armenia', 'Germany', 'Pakistan', 'Nigeria'};
         List<String> countryISO = new List<String>{'BR', 'AR', 'GM', 'PS', 'NI'};
@@ -14,7 +14,7 @@ private class AccountCreaterTest {
     }
 
     @isTest
-    static void createTest() {
+    static private void createTest() {
         
         AccountCreater accCreate = new AccountCreater();
         System.Test.startTest();

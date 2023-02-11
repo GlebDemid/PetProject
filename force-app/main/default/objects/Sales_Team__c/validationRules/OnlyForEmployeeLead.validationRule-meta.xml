@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ValidationRule xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>OnlyForEmployeeLead</fullName>
+    <active>true</active>
+    <description>Only for Employee marked as Lead</description>
+    <errorConditionFormula>AND(NOT(ISPICKVAL( Lead__r.Role__c , &apos;Lead&apos; )),NOT(ISBLANK( Lead__c )))</errorConditionFormula>
+    <errorDisplayField>Lead__c</errorDisplayField>
+    <errorMessage>Only for Employee marked as Lead</errorMessage>
+</ValidationRule>

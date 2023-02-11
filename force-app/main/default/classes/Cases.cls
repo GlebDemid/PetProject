@@ -11,56 +11,40 @@ public with sharing class Cases extends fflib_SObjectDomain{
         }
     }
 
-    public override void onBeforeUpdate(map<id, SObject> existing) {
-        changeCaseOwnerUpdate('Support');
-        changeCaseOwnerUpdate('Sales');
-    }
-
     public override void onBeforeInsert() {
-        changeCaseOwnerInsert('Support');
-        changeCaseOwnerInsert('Sales');
+        for (Case oneCase : (List<Case>) records) {
+            supportTypeRecord(oneCase);
+            salesTypeRecord(oneCase);
+        }
     }
 
-    private void changeCaseOwnerInsert(String typeOfRecord) {
-        
-        List<String> developerNameQueue = new List<String>{'%'+typeOfRecord+'%', 'All_queue'}; 
-        String soqlForQueue = 'SELECT Id, Name ' + 
-                'FROM Group ' + 
-                'WHERE Type=\'Queue\' '+
-                'AND DeveloperName LIKE : developerNameQueue ' +
-                'ORDER BY Name';
-        
-        List<Group> queueWithName = Database.query(soqlForQueue);
-        Group allqueue = queueWithName.get(0);
-        Group queueOfRecorType = queueWithName.get(1);
+    public override void onBeforeUpdate(map<id, SObject> existing) {        
+        for (Case oneCase : (List<Case>) records) {
+            supportTypeRecord(oneCase);
+            salesTypeRecord(oneCase);
+        }
+    }
 
-        for (Case oneCase: (List<Case>) records) {
-            if (oneCase.Status == 'Open' && oneCase.Type == typeOfRecord && oneCase.OwnerId == allqueue.id) {
-                oneCase.OwnerId = queueOfRecorType.Id;
+    private void supportTypeRecord(Case oneCase) {
+        if (oneCase.recordTypeID == CaseServise.SUPPORT_RECORD_RT) {
+            if (oneCase.Status == 'Sales action'){
+                oneCase.OwnerId = CaseServise.DEVELOPER_NAME_CASE_QUEUE_MAP.get('Sales_Queue').Id;
+            } else {
+                if (oneCase.Status == 'Support action' || oneCase.Status == 'Reopened' || oneCase.Status == 'Open') {
+                    oneCase.OwnerId = CaseServise.DEVELOPER_NAME_CASE_QUEUE_MAP.get('Support_Queue').Id;
+                }
             }
         }
     }
 
-    private void changeCaseOwnerUpdate(String typeOfRecord) {
-         
-        String soqlForQueue = 'SELECT Id, Name ' + 
-                'FROM Group ' + 
-                'WHERE Type=\'Queue\' '+
-                'AND DeveloperName LIKE \'%' + typeOfRecord + '%\' '+
-                'Limit 1';
-        
-        Group queueOfRecorType = Database.query(soqlForQueue);        
-        String statusValue = typeOfRecord + ' action';
-        
-        for (Case newValue : (List<Case>) records) {
-            if (typeOfRecord=='Support') { 
-                Case oldValue = (Case) Trigger.oldMap.get(newValue.id); 
-                if (oldValue.Status == 'Closed' && newValue.Status == 'Reopened'){
-                    newValue.OwnerId = queueOfRecorType.Id;
+    private void salesTypeRecord(Case oneCase) {
+        if (oneCase.recordTypeID == CaseServise.SALES_RECORD_RT) {
+            if (oneCase.Status == 'Support action'){
+                oneCase.OwnerId = CaseServise.DEVELOPER_NAME_CASE_QUEUE_MAP.get('Support_Queue').Id;
+            } else {
+                if (oneCase.Status == 'Sales action' || oneCase.Status == 'Reopened' || oneCase.Status == 'Open') {
+                    oneCase.OwnerId = CaseServise.DEVELOPER_NAME_CASE_QUEUE_MAP.get('Sales_Queue').Id;
                 }
-            }            
-            if (newValue.Status == statusValue) {
-                newValue.OwnerId = queueOfRecorType.Id;
             }
         }
     }

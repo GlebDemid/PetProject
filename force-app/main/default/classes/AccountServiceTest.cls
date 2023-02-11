@@ -1,7 +1,7 @@
 @isTest
 private class AccountServiceTest {
     @TestSetup
-    static void makeData(){
+    static private void makeData(){
         List<Country__C> cntrs = new List<Country__C> {
                 new Country__c(
                         Name='Poland',
@@ -23,12 +23,12 @@ private class AccountServiceTest {
     }
 
     @isTest
-    static private void mapIsoCountryTest() {
+    private static void mapIsoCountryTest() {
         Map<String, Id> mutableMapISOCountry = new Map<String, Id>();
         for (Country__c oneCountry : [SELECT id, ISO_Country_Code__c FROM Country__c]) {
             mutableMapISOCountry.put(oneCountry.ISO_Country_Code__c, oneCountry.Id);
         }
         Assert.areEqual(mutableMapISOCountry, AccountService.MAP_ISO_COUNTRY, 
-                'map is have to be full of test data');
+                'map is have to be full of test data');        
     }
 }

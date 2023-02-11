@@ -1,101 +1,79 @@
 @isTest
 private class CasesTest {
     @TestSetup
-    static void makeData(){
-        List<Case> newCases = new List<Case> {
-            new Case(
-                Origin='Phone',
-                Status='Closed'),
-            new Case(
-                Origin='Phone',
-                Status='Open'),
-            new Case(
-                Origin='Email',
-                Status='In progress'),
-            new Case(
-                Origin='Email',
-                Status='Support action'),
-            new Case(
-                Origin='Web',
-                Status='Sales action'),
-            new Case(
-                Origin='Web',
-                Status='Reopened')
-        };
-        insert newCases;
+    private static void makeData(){
+        List<Case> allNewCases = new List<Case>();
+        List<String> allRecordType = new List<String>{CaseServise.SALES_RECORD_RT, CaseServise.SUPPORT_RECORD_RT};
+        for (String oneRecordType : allRecordType) {
+            List<Case> newCases = new List<Case> {
+                new Case(
+                    Origin='Phone',
+                    Status='Closed',
+                    RecordTypeId=oneRecordType),
+                new Case(
+                    Origin='Phone',
+                    Status='Open',
+                    RecordTypeId=oneRecordType),
+                new Case(
+                    Origin='Email',
+                    Status='In progress',
+                    RecordTypeId=oneRecordType),
+                new Case(
+                    Origin='Email',
+                    Status='Support action',
+                    RecordTypeId=oneRecordType),
+                new Case(
+                    Origin='Web',
+                    Status='Sales action',
+                    RecordTypeId=oneRecordType),
+                new Case(
+                    Origin='Web',
+                    Status='Reopened',
+                    RecordTypeId=oneRecordType)
+            };
+            allNewCases.addAll(newCases);
+        }
+        
+        insert allNewCases;
     }
     @isTest
-    static void onBeforeUpdateTest(){
-        List<Case> allCases = [SELECT Id, Status, OwnerId 
+    private static void onBeforeUpdateAndInsertTest(){
+        List<Case> allCases = [
+                SELECT Id, Status, OwnerId
                 FROM Case];
-        Group salesQueue = [SELECT id 
-                FROM Group
-                WHERE Type='Queue' 
-                AND  Name = 'Sales Queue'
-                LIMIT 1];
-        Group supportQueue = [SELECT id 
-                FROM Group
-                WHERE Type='Queue' 
-                AND  Name = 'Support Queue'
-                LIMIT 1];
-        
-        
+        List<Case> supportQueueCases = new List<Case> ();
+        for (Case oneCase : allCases) {
+            if (oneCase.OwnerId == CaseServise.DEVELOPER_NAME_CASE_QUEUE_MAP.get('Support_Queue').Id) {
+                supportQueueCases.add(oneCase);
+            }
+        }
+        List<Case> salesQueueCases = new List<Case> ();
+        for (Case oneCase : allCases) {
+            if (oneCase.OwnerId == CaseServise.DEVELOPER_NAME_CASE_QUEUE_MAP.get('Sales_Queue').Id) {
+                salesQueueCases.add(oneCase);
+            }
+        }
+        Assert.AreEqual(4, supportQueueCases.size(), '4 inserted cases must change owner on support queue');
+        Assert.AreEqual(4, supportQueueCases.size(), '4 inserted cases must change owner on sales queue');    
         for (Case oneCase : allCases) {
             oneCase.Status='Support action';
         }
+
         System.Test.startTest();
             update allCases;
-        List<Case> UpdateCases = [SELECT Id, Status, OwnerId 
+        List<Case> updatedCases = [SELECT Id, Status, OwnerId 
                 FROM Case 
-                WHERE OwnerId = :supportQueue.Id];
+                WHERE OwnerId = :CaseServise.DEVELOPER_NAME_CASE_QUEUE_MAP.get('Support_Queue').Id];
         
-        Assert.AreEqual(allCases.size(), UpdateCases.size(), 'all cases must be with Support Queue');
-        for (Case oneCase : UpdateCases) {
+        Assert.AreEqual(12, updatedCases.size(), '12 cases must change owner on support Queue after update');
+        for (Case oneCase : updatedCases) {
             oneCase.Status='Sales action';
         }
-        update UpdateCases;
+        update updatedCases;
         System.Test.stopTest();
-        UpdateCases = [SELECT Id, Status, OwnerId 
+        updatedCases = [SELECT Id, Status, OwnerId 
                 FROM Case 
-                WHERE OwnerId = :salesQueue.Id];
-        Assert.AreEqual(allCases.size(), UpdateCases.size(), 'all cases must be with Sales Queue');
-    }
-
-    @isTest
-    static void onBeforeInsertTest(){
-        List<Case> newCases = new List<Case>();
-        Group allQueue = [SELECT id 
-                FROM Group
-                WHERE Type='Queue' 
-                AND  Name = 'All queue'
-                LIMIT 1];
-        Group supportQueue = [SELECT id 
-                FROM Group
-                WHERE Type='Queue' 
-                AND  Name = 'Support Queue'
-                LIMIT 1];
-        
-        for (Integer i = 0; i < 50; i++) {
-            Case oneCase = new Case(
-                    Origin='Email',
-                    Status='Open',
-                    Type='Support',
-                    OwnerId=allQueue.Id);
-            newCases.add(oneCase);
-        }
-        for (Integer i = 0; i < 50; i++) {
-            Case oneCase = new Case(
-                    Origin='Email',
-                    Status='Support action',
-                    OwnerId=allQueue.Id);
-            newCases.add(oneCase);
-        }
-        System.Test.startTest();
-        insert newCases;
-        SYstem.Test.stopTest();
-        List<Case> updateCases = [SELECT id 
-                FROM Case
-                WHERE OwnerId=:supportQueue.Id];
-        Assert.AreEqual(50, updateCases.size(), 'Half of inserted cases must change owner');
+                WHERE OwnerId = :CaseServise.DEVELOPER_NAME_CASE_QUEUE_MAP.get('Sales_Queue').Id];
+        Assert.AreEqual(12, updatedCases.size(), '12 cases must change owner on sales Queue after update');
     }
 }

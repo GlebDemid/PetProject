@@ -1,7 +1,7 @@
 @isTest
 private class AccountsTest {
     @TestSetup
-    static void makeData(){
+    private static void makeData(){
         List<Country__C> cntrs = new List<Country__C>();
         Country__c polandCountry = new Country__c(
                 Name='Poland',
@@ -34,7 +34,7 @@ private class AccountsTest {
 
 
     @isTest
-    static void onBeforeUpdateTest() {        
+    private static void onBeforeUpdateTest() {        
         Account accUpdate = [SELECT BillingCountry FROM Account LIMIT 1];
         
         System.Test.startTest();
@@ -58,7 +58,7 @@ private class AccountsTest {
     }
 
     @isTest
-    static void onBeforeInsertTest() {
+    private static void onBeforeInsertTest() {
         List<Account> accountsInsert = new List<Account>(); 
         for (Integer j = 0; j < 10 ; j++) {
             Account accInsert = new Account(Name='Argentina account '+j, 
